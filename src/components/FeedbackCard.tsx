@@ -1,20 +1,39 @@
 import React, { useState } from 'react';
-import { Send, Sparkles, Check, MessageSquareHeart } from 'lucide-react';
+import { Send, Check, MessageSquareHeart, Mail, ExternalLink, Copy } from 'lucide-react';
 
 export const FeedbackCard: React.FC = () => {
   const [topic, setTopic] = useState('Feature Suggestion');
   const [message, setMessage] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const getEmailContent = () => {
+    const subject = `[Careflora Feedback] - ${topic}`;
+    const body = `Hello Careflora Team,\n\nI would like to share feedback regarding: ${topic}\n\n${message || '(Write your thoughts here)'}\n\n-- Sent from Careflora Web Portal`;
+    return { subject, body };
+  };
+
+  const handleOpenGmail = (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent(`[Careflora Feedback] - ${topic}`);
-    const body = encodeURIComponent(
-      `Hello Careflora Team,\n\nI would like to share feedback regarding: ${topic}\n\n${message}\n\n-- Sent from Careflora Web Portal`
-    );
-    window.location.href = `mailto:leafora070511@gmail.com?subject=${subject}&body=${body}`;
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 4000);
+    const { subject, body } = getEmailContent();
+    const url = `https://mail.google.com/mail/?view=cm&fs=1&to=leafora070511@gmail.com&su=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleOpenMailto = () => {
+    const { subject, body } = getEmailContent();
+    window.location.href = `mailto:leafora070511@gmail.com?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+  };
+
+  const handleCopy = () => {
+    const { subject, body } = getEmailContent();
+    const fullText = `To: leafora070511@gmail.com\nSubject: ${subject}\n\n${body}`;
+    navigator.clipboard.writeText(fullText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 3000);
   };
 
   return (
@@ -25,7 +44,7 @@ export const FeedbackCard: React.FC = () => {
         </div>
         <div>
           <h3 className="font-serif text-xl sm:text-2xl text-[#1a2d1d] font-medium">
-            Feedback & Community Suggestions
+            Feedback &amp; Community Suggestions
           </h3>
           <p className="text-xs sm:text-sm text-[#5a6f5e]">
             Have a plant species you want added to AR, or an idea to make Careflora better? We love hearing from growers.
@@ -33,7 +52,7 @@ export const FeedbackCard: React.FC = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+      <form onSubmit={handleOpenGmail} className="space-y-4 mt-6">
         <div>
           <label className="block text-xs font-semibold text-[#3b4e3f] uppercase tracking-wider mb-2">
             Feedback Category
@@ -63,7 +82,7 @@ export const FeedbackCard: React.FC = () => {
 
         <div>
           <label className="block text-xs font-semibold text-[#3b4e3f] uppercase tracking-wider mb-2">
-            Your Thoughts & Suggestions
+            Your Thoughts &amp; Suggestions
           </label>
           <textarea
             required
@@ -75,24 +94,53 @@ export const FeedbackCard: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[#f0f4ed]">
           <span className="text-xs text-[#6e8372]">
-            Sends directly via your default email app to <strong className="font-mono text-[#2d5a3f]">leafora070511@gmail.com</strong>
+            Recipient: <strong className="font-mono text-[#2d5a3f]">leafora070511@gmail.com</strong>
           </span>
-          <button
-            type="submit"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2d5a3f] hover:bg-[#234832] text-white text-sm font-medium transition-all shadow-sm active:scale-95"
-          >
-            {submitted ? (
-              <>
-                <Check className="w-4 h-4 text-[#70e0a5]" /> Opened Mail App
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4" /> Send Feedback
-              </>
-            )}
-          </button>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Direct Gmail Inbox Compose Button */}
+            <button
+              type="submit"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#2d5a3f] hover:bg-[#234832] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs active:scale-95"
+              title="Open directly in Gmail web compose"
+            >
+              <Mail className="w-4 h-4 text-[#70e0a5]" />
+              <span>Send in Gmail</span>
+              <ExternalLink className="w-3 h-3 opacity-60 ml-0.5" />
+            </button>
+
+            {/* Default Mail Client Button */}
+            <button
+              type="button"
+              onClick={handleOpenMailto}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-[#f2f6ee] hover:bg-[#e6ede1] text-[#2c5339] border border-[#d3dfd0] text-xs sm:text-sm font-medium transition-all"
+              title="Open your device default mail app"
+            >
+              <span>Mail App</span>
+            </button>
+
+            {/* Copy button */}
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-white hover:bg-[#f6faf3] text-[#4d6351] border border-[#dbe3d6] text-xs sm:text-sm font-medium transition-all"
+              title="Copy message and email"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-[#70e0a5]" />
+                  <span className="text-[#2d5a3f]">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </form>
     </div>
